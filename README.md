@@ -31,8 +31,9 @@
 ใน GitHub เปิดไฟล์ `config.js` → กดรูปดินสอ แก้ 2 บรรทัดนี้ แล้ว Commit:
 ```js
 GOOGLE_CLIENT_ID: "xxxx.apps.googleusercontent.com",
-ALLOWED_EMAILS: ["อีเมลของเฟย์เฟย์@gmail.com"],
+ALLOWED_EMAIL_SHA256: ["รหัส SHA-256 ของอีเมล (ตัวพิมพ์เล็ก)"],
 ```
+อีเมลเก็บเป็นรหัส SHA-256 เพื่อไม่ให้อีเมลจริงอยู่ใน GitHub (ตั้งค่าไว้ให้แล้ว)
 เปิดลิงก์ GitHub Pages อีกครั้ง → เข้าสู่ระบบด้วย Google → กดอนุญาต (หน้า “Google hasn’t verified this app” ให้กด Continue เพราะเป็นแอปของเราเอง)
 
 ## ความปลอดภัย

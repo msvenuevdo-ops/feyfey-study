@@ -68,8 +68,7 @@ function initAuth(){
   };
   if(window.google?.accounts?.oauth2)ready();else{const t=setInterval(()=>{if(window.google?.accounts?.oauth2){clearInterval(t);ready()}},150);setTimeout(()=>{if(btn.disabled)$("#gateMsg").textContent="โหลดระบบเข้าสู่ระบบของ Google ไม่ได้ ตรวจอินเทอร์เน็ตแล้วรีเฟรช"},12000)}
   btn.onclick=()=>{ // must stay synchronous for iPad/iPhone popups
-    const hint=(CFG.ALLOWED_EMAILS||[])[0];
-    tokenClient.requestAccessToken({prompt:EMAIL?"":"select_account",login_hint:/@/.test(hint||"")&&!/ใส่/.test(hint)?hint:undefined});
+    tokenClient.requestAccessToken({prompt:EMAIL?"":"select_account",login_hint:EMAIL||undefined});
   };
 }
 async function onToken(resp){
@@ -78,8 +77,9 @@ async function onToken(resp){
   try{
     const r=await fetch("https://www.googleapis.com/oauth2/v3/userinfo",{headers:{Authorization:"Bearer "+TOKEN}});
     const u=await r.json();const em=(u.email||"").toLowerCase();
-    const allow=(CFG.ALLOWED_EMAILS||[]).map(x=>x.toLowerCase());
-    if(!allow.includes(em)){google.accounts.oauth2.revoke(TOKEN,()=>{});TOKEN=null;gate(`บัญชี ${em||"นี้"} ไม่มีสิทธิ์เข้าเว็บนี้ เว็บนี้สำหรับ${NAME}เท่านั้น`);return}
+    const hash=[...new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(em)))].map(b=>b.toString(16).padStart(2,"0")).join("");
+    const allow=(CFG.ALLOWED_EMAIL_SHA256||[]).map(x=>x.toLowerCase());
+    if(!em||!allow.includes(hash)){google.accounts.oauth2.revoke(TOKEN,()=>{});TOKEN=null;gate(`บัญชี ${em||"นี้"} ไม่มีสิทธิ์เข้าเว็บนี้ เว็บนี้สำหรับ${NAME}เท่านั้น`);return}
     EMAIL=em;
     try{sessionStorage.setItem("ffs.tok",JSON.stringify({t:TOKEN,exp:Date.now()+(+resp.expires_in||3600)*1000,email:EMAIL}))}catch{}
     if(PENDING_AFTER_LOGIN){const f=PENDING_AFTER_LOGIN;PENDING_AFTER_LOGIN=null;$("#gate").hidden=true;$("#shell").hidden=false;f();}
