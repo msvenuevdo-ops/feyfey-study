@@ -50,7 +50,7 @@ let VIEW="today";
 const UI={exSubj:"",exType:"exam",exQ:"",nbTab:"topics",nbSubj:"all",timerMode:"exam",timerExam:"",quiz:null,cardI:0,cardSubj:"all"};
 
 /* ---------------- auth ---------------- */
-let TOKEN=null,EMAIL="",tokenClient=null,PENDING_AFTER_LOGIN=null;
+let TOKEN=null,EMAIL="",tokenClient=null,PENDING_AFTER_LOGIN=null,NEED_CONSENT=false;
 const configured=()=>CFG.GOOGLE_CLIENT_ID&&!/ใส่/.test(CFG.GOOGLE_CLIENT_ID);
 function gate(msg){
   $("#shell").hidden=true;$("#gate").hidden=false;
@@ -61,18 +61,28 @@ function initAuth(){
   if(DEMO){btn.disabled=false;btn.textContent="เข้าโหมดทดลอง (เครื่องนี้)";btn.onclick=()=>{EMAIL="demo@local";enterApp()};$("#gateNote").textContent="โหมดทดลองบน localhost: ข้อมูลอยู่ในเบราว์เซอร์นี้เท่านั้น";return}
   if(!configured()){btn.disabled=true;$("#gateMsg").textContent="ยังไม่ได้ใส่ Google Client ID ในไฟล์ config.js (ดูวิธีใน README.md)";return}
   const saved=(()=>{try{return JSON.parse(sessionStorage.getItem("ffs.tok")||"null")}catch{return null}})();
-  if(saved&&saved.exp>Date.now()+60e3){TOKEN=saved.t;EMAIL=saved.email;enterApp();}
+  if(saved&&saved.exp>Date.now()+60e3&&/drive\.readonly/.test(saved.scope||"")){TOKEN=saved.t;EMAIL=saved.email;enterApp();}
+  else if(saved&&!/drive\.readonly/.test(saved.scope||"")){try{sessionStorage.removeItem("ffs.tok")}catch{}NEED_CONSENT=true;$("#gateMsg").textContent="ขออนุญาตใหม่อีกครั้ง: ติ๊กให้เว็บ “ดูไฟล์ใน Google Drive” ด้วยนะ เว็บถึงจะเห็นข้อสอบ"}
   const ready=()=>{
     tokenClient=google.accounts.oauth2.initTokenClient({client_id:CFG.GOOGLE_CLIENT_ID,scope:SCOPES,callback:onToken,error_callback:e=>{$("#gateMsg").textContent=e.type==="popup_closed"?"ปิดหน้าต่างเข้าสู่ระบบไปก่อน ลองกดใหม่อีกครั้งนะ":"เข้าสู่ระบบไม่สำเร็จ ("+e.type+")"}});
     btn.disabled=false;
   };
   if(window.google?.accounts?.oauth2)ready();else{const t=setInterval(()=>{if(window.google?.accounts?.oauth2){clearInterval(t);ready()}},150);setTimeout(()=>{if(btn.disabled)$("#gateMsg").textContent="โหลดระบบเข้าสู่ระบบของ Google ไม่ได้ ตรวจอินเทอร์เน็ตแล้วรีเฟรช"},12000)}
   btn.onclick=()=>{ // must stay synchronous for iPad/iPhone popups
-    tokenClient.requestAccessToken({prompt:EMAIL?"":"select_account",login_hint:EMAIL||undefined});
+    tokenClient.requestAccessToken({prompt:NEED_CONSENT?"consent":EMAIL?"":"select_account",login_hint:EMAIL||undefined});
   };
 }
 async function onToken(resp){
   if(resp.error){$("#gateMsg").textContent="เข้าสู่ระบบไม่สำเร็จ: "+resp.error;return}
+  // Google's consent screen lets each permission be unticked; without Drive read access the exam folders look empty
+  const need=["https://www.googleapis.com/auth/drive.readonly","https://www.googleapis.com/auth/drive.file"];
+  if(!google.accounts.oauth2.hasGrantedAllScopes(resp,...need)){
+    google.accounts.oauth2.revoke(resp.access_token,()=>{});
+    NEED_CONSENT=true;
+    gate("ต้องอนุญาตให้เว็บ “ดูไฟล์ใน Google Drive” ด้วยนะ กดปุ่มด้านล่าง แล้วติ๊กช่องอนุญาตทุกช่องก่อนกดดำเนินการต่อ");
+    return;
+  }
+  NEED_CONSENT=false;
   TOKEN=resp.access_token;
   try{
     const r=await fetch("https://www.googleapis.com/oauth2/v3/userinfo",{headers:{Authorization:"Bearer "+TOKEN}});
@@ -81,7 +91,7 @@ async function onToken(resp){
     const allow=(CFG.ALLOWED_EMAIL_SHA256||[]).map(x=>x.toLowerCase());
     if(!em||!allow.includes(hash)){google.accounts.oauth2.revoke(TOKEN,()=>{});TOKEN=null;gate(`บัญชี ${em||"นี้"} ไม่มีสิทธิ์เข้าเว็บนี้ เว็บนี้สำหรับ${NAME}เท่านั้น`);return}
     EMAIL=em;
-    try{sessionStorage.setItem("ffs.tok",JSON.stringify({t:TOKEN,exp:Date.now()+(+resp.expires_in||3600)*1000,email:EMAIL}))}catch{}
+    try{sessionStorage.setItem("ffs.tok",JSON.stringify({t:TOKEN,exp:Date.now()+(+resp.expires_in||3600)*1000,email:EMAIL,scope:resp.scope||""}))}catch{}
     if(PENDING_AFTER_LOGIN){const f=PENDING_AFTER_LOGIN;PENDING_AFTER_LOGIN=null;$("#gate").hidden=true;$("#shell").hidden=false;f();}
     else enterApp();
   }catch(e){gate("ตรวจสอบบัญชีไม่สำเร็จ ลองใหม่อีกครั้ง")}
