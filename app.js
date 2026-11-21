@@ -43,7 +43,7 @@ const subjTag=k=>`<span class="tag" style="background:${(SUBJ[k]||SUBJ.oth).c}" 
 
 /* ---------------- state ---------------- */
 const DEFAULT={v:1,settings:{start:today(),deadline:"2026-12-31",examDate:"2027-03-06",hWeekday:3,hWeekend:5,maxSets:3,target:70,offDays:[]},
-  catalog:{syncedAt:null,items:[]},over:{},plan:[],attempts:[],session:null,nb:{done:{},star:{},wrong:[],pomo:{}},updatedAt:0};
+  catalog:{syncedAt:null,items:[]},over:{},plan:[],attempts:[],session:null,nb:{done:{},star:{},wrong:[],pomo:{},vocab:{}},updatedAt:0};
 let S=structuredClone(DEFAULT);
 let NB=null; // notebook content (notebook.json)
 let VIEW="today";
@@ -192,7 +192,8 @@ function guessType(title,path,size){
   if(/สรุป|เอกสาร|ติวก่อนนอน|ข่าว|content|ใบแก้|เคมี$|ไฟล์เปล่า/i.test(title))return"read";
   return"exam";
 }
-function guessTopic(s,t){
+function guessTopic(s,t,path){
+  if(s==="mat"){const p=(path||[]).at(-1);return p&&path.length>1?p.replace(/^Triam (\d\d)$/i,"ข้อสอบเตรียมฯ ปี $1"):"แนวข้อสอบรวม"}
   const R={eng:[[/signature mock/i,"Signature Mock"],[/adv/i,"Advanced TU"],[/grammar|error/i,"Grammar"],[/vocab|oxford/i,"Vocabulary"],[/reading/i,"Reading"]],
     sci:[[/test day/i,"Test Day"],[/เลนส์|ลึกจริง|มุมวิกฤต|ทัศน|แสง/,"ฟิสิกส์: แสง"],[/simple machine/i,"ฟิสิกส์: เครื่องกล"],[/เคมี/,"เคมี"],[/solution|os-test|qr-form|ใบแก้/i,"Online Solution"],[/tu8\d|ปี 6\d|แนว/i,"แนวข้อสอบ TU"]],
     tha:[[/pre-?test/i,"Pre-Test"],[/สายวิทย์/,"สายวิทย์-สายศิลป์"],[/ติว|เก็ง/,"เอกสารติว/เก็ง"]],
@@ -221,7 +222,7 @@ async function syncCatalog(showResult){
       try{const r=await api(`files/${id}?fields=id,name&supportsAllDrives=true`);roots.push({id,name:(await r.json()).name})}
       catch(e){if(e.message==="auth")throw e;missing.push(id)}
     }
-    for(const r of roots){const before=files.length;await walk(r.id,[],0);if(files.length===before)missing.push(r.id)}
+    for(const r of roots){const before=files.length;await walk(r.id,[r.name],0);if(files.length===before)missing.push(r.id)}
   }catch(e){setSave("อ่าน Drive ไม่สำเร็จ");if(e.message!=="auth")toast("อ่านโฟลเดอร์ Drive ไม่สำเร็จ: "+e.message);return}
   // group duplicates: same subject + same cleaned title + same size (±2%)
   const groups=new Map();
@@ -239,14 +240,14 @@ async function syncCatalog(showResult){
       cl.files.sort((a,b)=>(a.createdTime||"").localeCompare(b.createdTime||"")||a.id.localeCompare(b.id));
       const p=cl.files[0];
       const title=arr.length>1?`${cl.title} (ไฟล์ ${(cl.size/1048576).toFixed(1)} MB)`:cl.title;
-      items.push({id:p.id,title,subj:cl.subj,type:guessType(cl.title,cl.path,cl.size),topic:guessTopic(cl.subj,cl.title),size:cl.size,folder:cl.path.join(" / "),dups:cl.files.slice(1).map(f=>f.id)});
+      items.push({id:p.id,title,subj:cl.subj,type:guessType(cl.title,cl.path,cl.size),topic:guessTopic(cl.subj,cl.title,cl.path),size:cl.size,folder:cl.path.join(" / "),dups:cl.files.slice(1).map(f=>f.id)});
     });
   }
   // keep ids that earlier pointed at a now-duplicate file working (alias map)
   items.sort((a,b)=>a.subj.localeCompare(b.subj)||natCmp(a.title,b.title));
   const before=new Set(S.catalog.items.map(i=>i.id));
   const added=items.filter(i=>!before.has(i.id)&&!S.catalog.items.some(o=>o.dups?.includes(i.id))).length;
-  S.catalog={syncedAt:Date.now(),items,missing};save();render();
+  S.catalog={syncedAt:Date.now(),items,missing,folders:(CFG.EXAM_FOLDERS||[]).join(",")};save();render();
   setSave("อ่านรายการไฟล์แล้ว ✓");
   if(missing.length)toast(`เปิดโฟลเดอร์ข้อสอบไม่ได้ ${missing.length} โฟลเดอร์ ดูวิธีแก้ในหน้าข้อสอบ`);
   else if(showResult)toast(`พบ ${items.length} ชุด/ไฟล์ · ใหม่ ${before.size?added:items.length} · ไฟล์ซ้ำ ${files.length-items.length}`);
@@ -258,6 +259,7 @@ function demoCatalog(){
   for(let i=1;i<=3;i++)mk("sci",i,`Test Day ${i} Science`,"exam");mk("sci",4,"เลนส์","exam");mk("sci",5,"เคมี","read");
   mk("tha",1,"Pre-Test ภาษาไทย 2568","exam");mk("tha",2,"แนวข้อสอบภาษาไทย สายวิทย์-สายศิลป์ ครั้งที่ 1","exam");
   mk("soc",1,"TU86","exam");mk("soc",2,"TU'89 สรุปข่าวโค้ง","read");
+  mk("mat",1,"Triam 67 (Math) ver. 4","exam");mk("mat",2,"TU67 เฉลย","ans");
   return L;
 }
 
@@ -369,7 +371,7 @@ VIEWS.today=()=>{
   const td=dayAt(t),yd=dayAt(addDays(t,-1));const tAvg=avg(td.map(a=>a.pct)),yAvg=avg(yd.map(a=>a.pct));
   const mins=td.reduce((s,a)=>s+(a.mins||0),0);
   const next7=[];for(let i=1;i<=7;i++){const d=addDays(t,i);const it=dayPlan(d);if(it.length)next7.push([d,it])}
-  const subs=Object.keys(SUBJ).filter(k=>exams().some(e=>e.subj===k&&planned(e)));
+  const subs=["eng","mat","sci","tha","soc"];
   return `<div class="hero">
     <div class="card pink hello"><div class="eyebrow">${greet()}</div><h1>${NAME}<em> สู้ ๆ นะ!</em></h1><p>${CHEERS[new Date().getDate()%CHEERS.length]}</p><svg viewBox="0 0 64 64" aria-hidden="true"><use href="#bunny"/></svg></div>
     <div class="card butter"><div class="eyebrow">ทำคลังข้อสอบให้จบใน</div><div class="big-num">${Math.max(0,left)}<span>วัน</span></div><div class="small muted">ถึง ${thD(st.deadline,{day:"numeric",month:"long"})} · วันสอบจริงอีก ${Math.max(0,examLeft)} วัน · ต่อเนื่อง ${streak()} วัน</div></div>
@@ -389,6 +391,7 @@ VIEWS.today=()=>{
       <a class="btn sm" href="#progress" style="margin-top:10px">ดูพัฒนาการ</a></div>
   </div>
   <div class="card"><h2 style="margin-bottom:10px">ความคืบหน้าแต่ละวิชา</h2><div class="stack">${subs.map(k=>{const s=subjStats(k);return `<div class="prog">${subjTag(k)}<div><div class="row between small"><b>${SUBJ[k].name}</b><span class="muted num">${s.done}/${s.total} · เฉลี่ย ${pct(s.avg)}</span></div><div class="bar"><i style="width:${s.total?s.done/s.total*100:0}%;background:${SUBJ[k].c}"></i></div></div></div>`}).join("")||`<span class="muted small">ยังไม่มีข้อมูล</span>`}</div></div>
+  ${vocabToday()}
   ${next7.length?`<details class="card"><summary style="cursor:pointer;min-height:44px;display:flex;align-items:center"><h2>7 วันข้างหน้า</h2></summary><div class="stack" style="margin-top:10px">${next7.map(([d,it])=>`<div><div class="eyebrow">${thD(d,{weekday:"long",day:"numeric",month:"short"})}</div><div class="stack" style="margin-top:6px">${it.map(taskRow).join("")}</div></div>`).join("")}</div></details>`:""}`;
 };
 
@@ -488,13 +491,46 @@ function calcScore(){
 }
 function parseNums(s){const out=[];(s||"").split(/[,\s]+/).forEach(p=>{const m=p.match(/^(\d+)-(\d+)$/);if(m){for(let i=+m[1];i<=+m[2]&&out.length<300;i++)out.push(i)}else if(/^\d+$/.test(p))out.push(+p)});return out}
 
+/* ---------- vocabulary (synonym groups) ---------- */
+let VOC=null;
+const vKey=(c,i)=>c.id+":"+i;
+function vocabGroups(){const out=[];(VOC?.categories||[]).forEach(c=>c.groups.forEach((g,i)=>out.push({...g,cat:c,key:vKey(c,i)})));return out}
+function vocabCard(g,compact){
+  const known=!!S.nb.vocab?.[g.key];const hide=UI.vHide&&!compact;
+  return `<div class="card" style="box-shadow:${compact?"none":""};${known?"background:var(--mint-soft)":""}">
+    <div class="row between"><span class="eyebrow">${esc(g.cat.name)}</span>${known?`<span class="pill done">จำได้แล้ว ✓</span>`:""}</div>
+    <h3 style="font-size:1.15rem;margin:.2rem 0 .5rem">ความหมาย “${esc(g.meaning)}”</h3>
+    <div class="vwords">${g.words.map(([w,th])=>`<span class="vw"><b>${esc(w)}</b>${hide?"":`<small>${esc(th)}</small>`}</span>`).join("")}</div>
+    <div class="row" style="margin-top:10px"><button class="btn sm ${known?"":"ok"}" data-act="vocabKnow" data-k="${esc(g.key)}">${known?"ยังไม่แม่น ทวนอีก":"จำได้แล้ว ✓"}</button></div></div>`;
+}
+function vocabToday(){
+  const G=vocabGroups();if(!G.length)return"";
+  const unknown=G.filter(g=>!S.nb.vocab?.[g.key]);const pool=unknown.length?unknown:G;
+  const day=Math.floor(parseD(today())/864e5);const picks=[pool[day%pool.length],pool[(day+7)%pool.length]].filter((g,i,a)=>a.indexOf(g)===i);
+  const n=G.length-unknown.length;
+  return `<div class="card lilac"><div class="sec-h"><h2>คำศัพท์วันนี้</h2><span class="pill">จำได้ ${n}/${G.length} กลุ่ม</span></div>
+  <p class="small muted" style="margin:.2rem 0 10px">คำในกลุ่มเดียวกันมีความหมายใกล้กัน ข้อสอบชอบให้หาคำที่ความหมายเหมือน (synonym)</p>
+  <div class="grid g2">${picks.map(g=>vocabCard(g,true)).join("")}</div>
+  <a class="btn sm" href="#notes" data-act="vocabAll" style="margin-top:12px">ดูคำศัพท์ทั้งหมด</a></div>`;
+}
+function vocabView(){
+  if(!VOC)return `<div class="card empty">กำลังโหลดคำศัพท์…</div>`;
+  const cats=VOC.categories;const cur=UI.vCat||"all";
+  const G=vocabGroups().filter(g=>cur==="all"||g.cat.id===cur);
+  const known=vocabGroups().filter(g=>S.nb.vocab?.[g.key]).length;
+  return `<div class="card lilac row between"><span><b>จำได้แล้ว ${known}/${vocabGroups().length} กลุ่ม</b><br><span class="small muted">ซ่อนความหมายไว้ แล้วลองนึกเองก่อน ช่วยให้จำได้แม่นขึ้น</span></span><button class="btn sm" data-act="vocabHide">${UI.vHide?"แสดงความหมาย":"ซ่อนความหมาย"}</button></div>
+  <div class="chips" role="group" aria-label="หมวดคำศัพท์"><button class="chip" data-act="vocabCat" data-k="all" aria-pressed="${cur==="all"}">ทุกหมวด</button>${cats.map(c=>`<button class="chip" data-act="vocabCat" data-k="${c.id}" aria-pressed="${cur===c.id}">${esc(c.name)}</button>`).join("")}</div>
+  <div class="grid g2">${G.map(g=>vocabCard(g,false)).join("")}</div>`;
+}
+
 /* ---------- notebook ---------- */
 const PRI_LABEL={HIGH:"สำคัญมาก",MEDIUM:"สำคัญ",LOW:"เสริม"};
 function nbSubj(id){return SUBJ[NB_SUBJ[id]]||SUBJ.oth}
 VIEWS.notes=()=>{
   if(!NB)return `<div class="card empty">กำลังโหลดสมุดสรุป…</div>`;
-  const seg=`<div class="seg" role="group" aria-label="ส่วนของสมุด">${[["topics","สรุปเนื้อหา"],["quiz","ข้อสอบจำลอง"],["cards","การ์ดสูตร"]].map(([k,l])=>`<button data-act="nbTab" data-k="${k}" aria-pressed="${UI.nbTab===k}">${l}</button>`).join("")}</div>`;
+  const seg=`<div class="seg" role="group" aria-label="ส่วนของสมุด">${[["topics","สรุปเนื้อหา"],["vocab","คำศัพท์"],["quiz","ข้อสอบ"],["cards","การ์ดสูตร"]].map(([k,l])=>`<button data-act="nbTab" data-k="${k}" aria-pressed="${UI.nbTab===k}">${l}</button>`).join("")}</div>`;
   const subjChips=(cur,act)=>`<div class="chips" role="group" aria-label="วิชา"><button class="chip" data-act="${act}" data-k="all" aria-pressed="${cur==="all"}">ทุกวิชา</button>${NB.subjects.map(s=>`<button class="chip" data-act="${act}" data-k="${s.id}" aria-pressed="${cur===s.id}">${esc(s.nameTh)}</button>`).join("")}</div>`;
+  if(UI.nbTab==="vocab")return `<div class="row" style="justify-content:center">${seg}</div>`+vocabView();
   if(UI.nbTab==="quiz")return `<div class="row" style="justify-content:center">${seg}</div>`+quizView(subjChips);
   if(UI.nbTab==="cards")return `<div class="row" style="justify-content:center">${seg}</div>`+cardsView(subjChips);
   const L=NB.topics.filter(t=>UI.nbSubj==="all"||t.subjectId===UI.nbSubj);
@@ -653,7 +689,11 @@ const ACT={
   attDel:b=>confirmDlg("ลบคะแนนครั้งนี้?","ลบแล้วกู้คืนไม่ได้ (ยกเว้นมีไฟล์สำรอง)","ลบ",()=>{S.attempts=S.attempts.filter(a=>a.id!==b.dataset.id);save();render()}),
   askAI:()=>{const t=aiPrompt();const w=window.open("https://claude.ai/new","_blank","noopener");
     if(navigator.clipboard?.writeText)navigator.clipboard.writeText(t).then(()=>toast("คัดลอกข้อมูลแล้ว วางในแชต AI ได้เลย")).catch(()=>showPrompt(t));else showPrompt(t);if(!w)showPrompt(t)},
-  nbTab:b=>{UI.nbTab=b.dataset.k;render()},nbSubj:b=>{UI.nbSubj=b.dataset.k;render()},cardSubj:b=>{UI.cardSubj=b.dataset.k;UI.cardI=0;render()},
+  nbTab:b=>{UI.nbTab=b.dataset.k;render()},
+  vocabAll:()=>{UI.nbTab="vocab";if(location.hash==="#notes")render();else location.hash="notes"},
+  vocabCat:b=>{UI.vCat=b.dataset.k;render()},
+  vocabHide:()=>{UI.vHide=!UI.vHide;render()},
+  vocabKnow:b=>{S.nb.vocab=S.nb.vocab||{};const k=b.dataset.k;if(S.nb.vocab[k])delete S.nb.vocab[k];else{S.nb.vocab[k]=today();toast(`เก่งมาก ${NAME}!`)}save();const y=scrollY;render();scrollTo(0,y)},nbSubj:b=>{UI.nbSubj=b.dataset.k;render()},cardSubj:b=>{UI.cardSubj=b.dataset.k;UI.cardI=0;render()},
   nbDone:b=>{const id=b.dataset.id;if(S.nb.done[id])delete S.nb.done[id];else{S.nb.done[id]=today();toast(`เก่งมาก ${NAME}! อ่านจบแล้ว ${Object.keys(S.nb.done).length} หัวข้อ`)}save();const y=scrollY;render();scrollTo(0,y)},
   nbStar:b=>{const id=b.dataset.id;if(S.nb.star[id])delete S.nb.star[id];else S.nb.star[id]=1;save();const y=scrollY;render();scrollTo(0,y)},
   quizTopic:b=>{const t=NB.topics.find(x=>x.id===b.dataset.id);UI.quiz={qs:shuffle(NB.questions.filter(q=>q.topicId===t.id)),i:0,picked:null,ans:[],label:t.title};UI.nbTab="quiz";location.hash="notes"},
@@ -720,11 +760,12 @@ async function enterApp(){
   $("#gate").hidden=true;$("#shell").hidden=false;
   $("#view").innerHTML=`<div class="card empty">กำลังเปิดสมุดของ${NAME}…</div>`;
   fetch("notebook.json").then(r=>r.json()).then(j=>{NB=j;if(VIEW==="notes")render()}).catch(()=>{});
+  fetch("vocab.json").then(r=>r.json()).then(j=>{VOC=j;if(loaded&&(VIEW==="today"||VIEW==="notes"))render()}).catch(()=>{});
   try{await Store.load()}catch(e){if(e.message==="auth")return;toast("โหลดข้อมูลจาก Drive ไม่สำเร็จ ใช้ข้อมูลในเครื่องไปก่อน");const l=Store.readCache();if(l)S=merge(l)}
   loaded=true;
   if(S.session&&S.session.status==="running")keepAwake(true);
   render();
-  const stale=!S.catalog.syncedAt||Date.now()-S.catalog.syncedAt>12*3600e3||!S.catalog.items.length||(S.catalog.missing||[]).length>0;
+  const stale=!S.catalog.syncedAt||Date.now()-S.catalog.syncedAt>12*3600e3||!S.catalog.items.length||(S.catalog.missing||[]).length>0||S.catalog.folders!==(CFG.EXAM_FOLDERS||[]).join(",");
   if(stale)syncCatalog(!S.catalog.items.length);
 }
 initAuth();

@@ -156,6 +156,12 @@ tr:last-child td{border-bottom:0}
 .face.back{background:var(--paper);transform:rotateY(180deg)}
 .face.back code{font-family:ui-monospace,Menlo,monospace;background:var(--butter-soft);padding:10px 12px;border-radius:14px;display:block;white-space:pre-wrap}
 
+/* vocab */
+.vwords{display:flex;flex-wrap:wrap;gap:8px}
+.vw{display:inline-flex;flex-direction:column;line-height:1.25;padding:6px 12px;border:2px solid var(--line);border-radius:14px;background:var(--paper)}
+.vw b{font-size:1.02rem}
+.vw small{font-size:.8rem;color:var(--muted)}
+
 /* chart */
 .chart{width:100%;height:auto;display:block}
 .chart text{fill:var(--muted);font-size:11px;font-family:var(--f-body)}

@@ -10,7 +10,8 @@ window.APP_CONFIG = {
   // 3) โฟลเดอร์ข้อสอบใน Google Drive (ID คือส่วนท้ายของลิงก์โฟลเดอร์)
   EXAM_FOLDERS: [
     "12un7yvBwqVDbojqx4QIrOEQFnGKOUjpK", // คลังข้อสอบ by เฟย์
-    "1KVSuO01wV234FaWtiiYRmaGpojaPPc2y"  // Eng Tu
+    "1KVSuO01wV234FaWtiiYRmaGpojaPPc2y", // Eng Tu
+    "1UYA8ycHewdtzeEewMdb_s9awfEkx0nKd"  // Math
   ],
 
   // ชื่อไฟล์เก็บข้อมูล (คะแนน แผน ความคืบหน้า) ที่จะสร้างใน My Drive

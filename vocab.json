@@ -1,0 +1,89 @@
+{
+  "title": "คำศัพท์ความหมายเหมือน (Synonyms) ที่ออกสอบบ่อย",
+  "categories": [
+    {"id": "importance", "name": "ความสำคัญ", "groups": [
+      {"meaning": "สำคัญ", "words": [["important","สำคัญ"],["significant","มีนัยสำคัญ"],["crucial","สำคัญมาก ชี้ขาด"],["vital","จำเป็นยิ่ง"],["critical","สำคัญอย่างยิ่ง วิกฤต"]]},
+      {"meaning": "จำเป็น", "words": [["necessary","จำเป็น"],["essential","จำเป็นอย่างยิ่ง"],["indispensable","ขาดไม่ได้"],["mandatory","บังคับ"],["compulsory","ภาคบังคับ"]]},
+      {"meaning": "หลัก ๆ / อันดับแรก", "words": [["main","หลัก"],["major","สำคัญ ส่วนใหญ่"],["primary","อันดับแรก ปฐมภูมิ"],["principal","หลัก สำคัญที่สุด"],["chief","หัวหน้า หลัก"],["key","สำคัญ เป็นกุญแจ"]]}
+    ]},
+    {"id": "size", "name": "ขนาดและปริมาณ", "groups": [
+      {"meaning": "ใหญ่มาก", "words": [["large","ใหญ่"],["huge","ใหญ่โต"],["enormous","มหึมา"],["vast","กว้างใหญ่"],["immense","ใหญ่มหาศาล"],["massive","ใหญ่และหนัก"]]},
+      {"meaning": "เล็กน้อย", "words": [["small","เล็ก"],["tiny","จิ๋ว"],["minute","เล็กมาก (ไม-นิ้วท์)"],["slight","เล็กน้อย"],["minor","เล็กน้อย ไม่สำคัญ"],["negligible","น้อยจนไม่ต้องสนใจ"]]},
+      {"meaning": "มากมาย", "words": [["numerous","จำนวนมาก"],["abundant","อุดมสมบูรณ์"],["plentiful","มีมากมาย"],["countless","นับไม่ถ้วน"],["ample","เพียงพอเหลือเฟือ"]]},
+      {"meaning": "ขาดแคลน / ไม่พอ", "words": [["scarce","หายาก ขาดแคลน"],["rare","หายาก"],["insufficient","ไม่เพียงพอ"],["inadequate","ไม่เพียงพอ ไม่ดีพอ"],["limited","จำกัด"]]}
+    ]},
+    {"id": "change", "name": "เพิ่ม ลด และเปลี่ยนแปลง", "groups": [
+      {"meaning": "เพิ่มขึ้น", "words": [["increase","เพิ่ม"],["rise","สูงขึ้น"],["grow","เติบโต"],["expand","ขยาย"],["boost","กระตุ้นให้เพิ่ม"],["soar","พุ่งสูง"]]},
+      {"meaning": "ลดลง", "words": [["decrease","ลด"],["decline","ลดลง ถดถอย"],["drop","ตก ลดลง"],["reduce","ทำให้ลด"],["diminish","ลดน้อยลง"],["plummet","ดิ่งลงอย่างรวดเร็ว"]]},
+      {"meaning": "เปลี่ยน", "words": [["change","เปลี่ยน"],["alter","ดัดแปลง"],["modify","ปรับเปลี่ยน"],["transform","เปลี่ยนรูป"],["adjust","ปรับ"],["convert","แปลง"]]},
+      {"meaning": "ทำให้ดีขึ้น", "words": [["improve","ปรับปรุง"],["enhance","ยกระดับ"],["upgrade","อัปเกรด"],["refine","ขัดเกลา"],["promote","ส่งเสริม"]]}
+    ]},
+    {"id": "think", "name": "ความคิดและความเข้าใจ", "groups": [
+      {"meaning": "คิดไตร่ตรอง", "words": [["consider","พิจารณา"],["contemplate","ใคร่ครวญ"],["ponder","ครุ่นคิด"],["reflect","ทบทวน"],["deliberate","ไตร่ตรองอย่างรอบคอบ"]]},
+      {"meaning": "เข้าใจ", "words": [["understand","เข้าใจ"],["comprehend","เข้าใจอย่างถ่องแท้"],["grasp","จับใจความได้"],["realize","ตระหนัก"],["perceive","รับรู้"]]},
+      {"meaning": "คาดว่า / เชื่อว่า", "words": [["believe","เชื่อ"],["suppose","สมมติว่า"],["assume","ทึกทัก สันนิษฐาน"],["presume","สันนิษฐาน"],["expect","คาดหวัง"]]},
+      {"meaning": "ความคิดเห็น", "words": [["opinion","ความคิดเห็น"],["view","มุมมอง"],["viewpoint","จุดยืน"],["perspective","มุมมอง"],["attitude","ทัศนคติ"]]}
+    ]},
+    {"id": "speak", "name": "การพูดและการสื่อสาร", "groups": [
+      {"meaning": "กล่าว / บอก", "words": [["say","พูด"],["state","แถลง ระบุ"],["mention","กล่าวถึง"],["remark","ให้ความเห็น"],["declare","ประกาศ"],["claim","อ้าง"]]},
+      {"meaning": "อธิบาย", "words": [["explain","อธิบาย"],["clarify","ทำให้ชัดเจน"],["illustrate","อธิบายด้วยตัวอย่าง"],["describe","บรรยาย"],["elaborate","ขยายความ"]]},
+      {"meaning": "แนะนำ / เสนอ", "words": [["suggest","แนะนำ"],["recommend","แนะนำ"],["propose","เสนอ"],["advise","ให้คำปรึกษา"],["advocate","สนับสนุน"]]},
+      {"meaning": "ตำหนิ / วิจารณ์", "words": [["criticize","วิจารณ์"],["blame","กล่าวโทษ"],["condemn","ประณาม"],["denounce","ประณามอย่างเปิดเผย"],["scold","ดุ"]]}
+    ]},
+    {"id": "difficulty", "name": "ยาก ง่าย และปัญหา", "groups": [
+      {"meaning": "ยาก", "words": [["difficult","ยาก"],["hard","ยาก หนัก"],["tough","ยากลำบาก"],["challenging","ท้าทาย"],["demanding","ต้องใช้ความพยายามมาก"],["complicated","ซับซ้อน"]]},
+      {"meaning": "ง่าย", "words": [["easy","ง่าย"],["simple","ง่าย ธรรมดา"],["effortless","ไม่ต้องออกแรง"],["straightforward","ตรงไปตรงมา"],["uncomplicated","ไม่ซับซ้อน"]]},
+      {"meaning": "ปัญหา / อุปสรรค", "words": [["problem","ปัญหา"],["issue","ประเด็นปัญหา"],["obstacle","อุปสรรค"],["barrier","สิ่งกีดขวาง"],["dilemma","ทางเลือกที่ลำบาก"]]},
+      {"meaning": "แก้ไข / จัดการ", "words": [["solve","แก้ปัญหา"],["resolve","คลี่คลาย"],["settle","ยุติ"],["tackle","รับมือ"],["handle","จัดการ"],["cope with","รับมือกับ"]]}
+    ]},
+    {"id": "goodmood", "name": "อารมณ์ด้านบวก", "groups": [
+      {"meaning": "มีความสุข", "words": [["happy","มีความสุข"],["glad","ดีใจ"],["pleased","พอใจ"],["delighted","ปลื้มใจ"],["joyful","รื่นเริง"],["cheerful","ร่าเริง"]]},
+      {"meaning": "ตื่นเต้น กระตือรือร้น", "words": [["excited","ตื่นเต้น"],["thrilled","ตื่นเต้นมาก"],["eager","กระตือรือร้น"],["enthusiastic","กระตือรือร้น"],["keen","อยากมาก"]]},
+      {"meaning": "สงบ", "words": [["calm","สงบ"],["peaceful","สันติ เงียบสงบ"],["tranquil","เงียบสงบ"],["serene","สงบเยือกเย็น"],["relaxed","ผ่อนคลาย"]]}
+    ]},
+    {"id": "badmood", "name": "อารมณ์ด้านลบ", "groups": [
+      {"meaning": "เศร้า", "words": [["sad","เศร้า"],["unhappy","ไม่มีความสุข"],["sorrowful","โศกเศร้า"],["depressed","หดหู่"],["miserable","ทุกข์ระทม"],["gloomy","หม่นหมอง"]]},
+      {"meaning": "โกรธ / รำคาญ", "words": [["angry","โกรธ"],["furious","โกรธจัด"],["annoyed","รำคาญ"],["irritated","หงุดหงิด"],["outraged","โกรธแค้น"]]},
+      {"meaning": "กลัว / กังวล", "words": [["afraid","กลัว"],["frightened","ตกใจกลัว"],["terrified","หวาดกลัวมาก"],["anxious","วิตกกังวล"],["worried","กังวล"],["nervous","ประหม่า"]]},
+      {"meaning": "แปลกใจ", "words": [["surprised","ประหลาดใจ"],["amazed","ทึ่ง"],["astonished","ตกตะลึง"],["shocked","ตกใจ"],["stunned","อึ้ง"]]}
+    ]},
+    {"id": "character", "name": "ลักษณะนิสัยคน", "groups": [
+      {"meaning": "ฉลาด", "words": [["smart","ฉลาด"],["clever","หัวไว"],["intelligent","มีสติปัญญา"],["bright","หัวดี"],["brilliant","ปราดเปรื่อง"],["wise","รอบรู้ มีวิจารณญาณ"]]},
+      {"meaning": "กล้าหาญ", "words": [["brave","กล้า"],["courageous","กล้าหาญ"],["bold","กล้าได้กล้าเสีย"],["fearless","ไม่เกรงกลัว"],["daring","ใจกล้า"]]},
+      {"meaning": "ขยัน", "words": [["hardworking","ขยัน"],["diligent","อุตสาหะ"],["industrious","ขยันขันแข็ง"],["studious","ขยันเรียน"],["dedicated","ทุ่มเท"]]},
+      {"meaning": "ใจดี มีน้ำใจ", "words": [["kind","ใจดี"],["generous","ใจกว้าง"],["considerate","เกรงใจ ใส่ใจผู้อื่น"],["compassionate","เห็นอกเห็นใจ"],["helpful","ชอบช่วยเหลือ"]]},
+      {"meaning": "หยาบคาย", "words": [["rude","หยาบคาย"],["impolite","ไม่สุภาพ"],["offensive","น่ารังเกียจ ล่วงเกิน"],["disrespectful","ไม่ให้เกียรติ"],["arrogant","หยิ่งยโส"]]}
+    ]},
+    {"id": "truth", "name": "ถูกต้อง จริง และแน่นอน", "groups": [
+      {"meaning": "ถูกต้อง แม่นยำ", "words": [["correct","ถูกต้อง"],["right","ถูก"],["accurate","แม่นยำ"],["precise","เที่ยงตรง"],["exact","ตรงเป๊ะ"]]},
+      {"meaning": "แท้ / จริง", "words": [["true","จริง"],["real","จริง"],["genuine","แท้"],["actual","ที่เป็นจริง"],["authentic","ของแท้"]]},
+      {"meaning": "แน่ใจ", "words": [["certain","แน่นอน"],["sure","แน่ใจ"],["definite","ชัดเจนแน่นอน"],["positive","มั่นใจ"],["confident","มั่นใจ"]]},
+      {"meaning": "ผิด", "words": [["wrong","ผิด"],["incorrect","ไม่ถูกต้อง"],["mistaken","เข้าใจผิด"],["inaccurate","ไม่แม่นยำ"],["false","เท็จ"]]}
+    ]},
+    {"id": "time", "name": "เวลา ความเร็ว และความใหม่", "groups": [
+      {"meaning": "เริ่ม", "words": [["begin","เริ่ม"],["start","เริ่ม"],["commence","เริ่มต้น (ทางการ)"],["initiate","ริเริ่ม"],["launch","เปิดตัว"]]},
+      {"meaning": "จบ / สิ้นสุด", "words": [["end","จบ"],["finish","เสร็จ"],["complete","ทำให้สมบูรณ์"],["conclude","สรุป ปิดท้าย"],["terminate","ยุติ"]]},
+      {"meaning": "เร็ว", "words": [["fast","เร็ว"],["quick","รวดเร็ว"],["rapid","รวดเร็ว"],["swift","ฉับไว"],["prompt","ทันที"]]},
+      {"meaning": "ใหม่ / ทันสมัย", "words": [["new","ใหม่"],["modern","ทันสมัย"],["novel","แปลกใหม่"],["recent","ล่าสุด"],["contemporary","ร่วมสมัย"]]},
+      {"meaning": "เก่า / ล้าสมัย", "words": [["old","เก่า"],["ancient","โบราณ"],["antique","ของเก่า"],["obsolete","เลิกใช้แล้ว"],["outdated","ล้าสมัย"]]}
+    ]},
+    {"id": "action", "name": "การกระทำที่เจอบ่อย", "groups": [
+      {"meaning": "ช่วยเหลือ", "words": [["help","ช่วย"],["assist","ช่วยเหลือ"],["aid","ให้ความช่วยเหลือ"],["support","สนับสนุน"],["facilitate","อำนวยความสะดวก"]]},
+      {"meaning": "สร้าง", "words": [["create","สร้างสรรค์"],["build","สร้าง"],["construct","ก่อสร้าง"],["produce","ผลิต"],["establish","ก่อตั้ง"]]},
+      {"meaning": "ทำลาย", "words": [["destroy","ทำลาย"],["ruin","ทำให้พัง"],["damage","ทำให้เสียหาย"],["wreck","ทำลายย่อยยับ"],["demolish","รื้อถอน"]]},
+      {"meaning": "ค้นพบ / หาเจอ", "words": [["find","พบ"],["discover","ค้นพบ"],["detect","ตรวจพบ"],["locate","ระบุตำแหน่ง"],["uncover","เปิดโปง"]]},
+      {"meaning": "ได้มา", "words": [["get","ได้"],["obtain","ได้รับ"],["acquire","ได้มา (ความรู้/ทักษะ)"],["gain","ได้เพิ่ม"],["receive","รับ"]]},
+      {"meaning": "ใช้", "words": [["use","ใช้"],["utilize","ใช้ประโยชน์"],["employ","นำมาใช้ จ้าง"],["apply","ประยุกต์ใช้"],["exploit","ใช้ประโยชน์ (บางครั้งในทางไม่ดี)"]]},
+      {"meaning": "แสดงให้เห็น", "words": [["show","แสดง"],["display","จัดแสดง"],["reveal","เปิดเผย"],["demonstrate","สาธิต พิสูจน์"],["indicate","บ่งชี้"]]},
+      {"meaning": "ป้องกัน / หลีกเลี่ยง", "words": [["avoid","หลีกเลี่ยง"],["prevent","ป้องกัน"],["evade","หลบเลี่ยง"],["escape","หนี"],["protect","ปกป้อง"]]}
+    ]},
+    {"id": "quality", "name": "คุณภาพและลักษณะ", "groups": [
+      {"meaning": "ดีเยี่ยม", "words": [["excellent","ยอดเยี่ยม"],["outstanding","โดดเด่น"],["superb","ดีเลิศ"],["wonderful","วิเศษ"],["remarkable","น่าทึ่ง"]]},
+      {"meaning": "แย่", "words": [["bad","แย่"],["poor","ด้อย"],["terrible","แย่มาก"],["awful","เลวร้าย"],["dreadful","น่ากลัว แย่มาก"]]},
+      {"meaning": "สวยงาม", "words": [["beautiful","สวย"],["pretty","น่ารัก สวย"],["lovely","น่ารัก"],["attractive","ดึงดูดใจ"],["gorgeous","งดงาม"],["elegant","สง่างาม"]]},
+      {"meaning": "แปลก ผิดปกติ", "words": [["strange","แปลก"],["odd","ประหลาด"],["unusual","ผิดปกติ"],["peculiar","แปลกประหลาด"],["bizarre","พิสดาร"]]},
+      {"meaning": "ธรรมดา ทั่วไป", "words": [["ordinary","ธรรมดา"],["common","ทั่วไป"],["usual","ตามปกติ"],["typical","แบบฉบับ"],["normal","ปกติ"]]},
+      {"meaning": "อันตราย", "words": [["dangerous","อันตราย"],["risky","เสี่ยง"],["hazardous","เป็นอันตราย"],["harmful","เป็นภัย"],["perilous","เต็มไปด้วยภัย"]]}
+    ]}
+  ]
+}
