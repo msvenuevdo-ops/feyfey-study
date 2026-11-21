@@ -129,7 +129,7 @@ textarea{min-height:80px;resize:vertical}
 .timer svg{width:min(300px,76vw);height:auto}
 .tnum{font-family:var(--f-display);font-size:52px;font-variant-numeric:tabular-nums;fill:var(--ink)}
 .tlab{font-size:16px;fill:var(--muted);font-family:var(--f-body)}
-.seg{display:inline-flex;border:2px solid var(--line);border-radius:999px;background:var(--paper);padding:3px;gap:3px}
+.seg{display:inline-flex;flex-wrap:wrap;justify-content:center;border:2px solid var(--line);border-radius:24px;background:var(--paper);padding:3px;gap:3px;max-width:100%}
 .seg button{border:0;background:transparent;border-radius:999px;padding:6px 16px;min-height:40px;font-weight:600}
 .seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
 
@@ -161,6 +161,13 @@ tr:last-child td{border-bottom:0}
 .vw{display:inline-flex;flex-direction:column;line-height:1.25;padding:6px 12px;border:2px solid var(--line);border-radius:14px;background:var(--paper)}
 .vw b{font-size:1.02rem}
 .vw small{font-size:.8rem;color:var(--muted)}
+
+/* key terms */
+.kt{border:2px solid var(--line);border-radius:18px;background:var(--paper)}
+.kt summary{list-style:none;cursor:pointer;padding:10px 12px;min-height:var(--target)}
+.kt summary::-webkit-details-marker{display:none}
+.kt-body{padding:0 14px 12px 64px}
+@media (max-width:480px){.kt-body{padding-left:14px}}
 
 /* chart */
 .chart{width:100%;height:auto;display:block}

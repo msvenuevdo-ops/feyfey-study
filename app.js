@@ -43,7 +43,7 @@ const subjTag=k=>`<span class="tag" style="background:${(SUBJ[k]||SUBJ.oth).c}" 
 
 /* ---------------- state ---------------- */
 const DEFAULT={v:1,settings:{start:today(),deadline:"2026-12-31",examDate:"2027-03-06",hWeekday:3,hWeekend:5,maxSets:3,target:70,offDays:[]},
-  catalog:{syncedAt:null,items:[]},over:{},plan:[],attempts:[],session:null,nb:{done:{},star:{},wrong:[],pomo:{},vocab:{}},updatedAt:0};
+  catalog:{syncedAt:null,items:[]},over:{},plan:[],attempts:[],session:null,nb:{done:{},star:{},wrong:[],pomo:{},vocab:{},kt:{}},updatedAt:0};
 let S=structuredClone(DEFAULT);
 let NB=null; // notebook content (notebook.json)
 let VIEW="today";
@@ -327,7 +327,7 @@ function buildPlan(){
 function planDialog(){
   const r=buildPlan();window.__plan=r;const st=S.settings;
   const need=(r.total/60/Math.max(1,r.days)).toFixed(1);
-  openDlg(`<h2 id="dlgTitle">จัดแผนให้จบภายใน ${thD(st.deadline,{day:"numeric",month:"long"})}</h2>
+  openDlg(`<h2 id="dlgTitle">จัดแผนให้จบภายใน ${thD(st.deadline,{day:"numeric",month:"long",year:"numeric"})}</h2>
   <div class="grid g2" style="gap:10px">
     <div class="card butter" style="box-shadow:none"><div class="eyebrow">จัดลงตาราง</div><div class="big-num" style="font-size:2.2rem">${r.placed.length}<span>ชุด</span></div></div>
     <div class="card mint" style="box-shadow:none"><div class="eyebrow">เฉลี่ยต่อวัน</div><div class="big-num" style="font-size:2.2rem">${need}<span>ชม.</span></div></div>
@@ -377,7 +377,7 @@ VIEWS.today=()=>{
     <div class="card butter"><div class="eyebrow">ทำคลังข้อสอบให้จบใน</div><div class="big-num">${Math.max(0,left)}<span>วัน</span></div><div class="small muted">ถึง ${thD(st.deadline,{day:"numeric",month:"long"})} · วันสอบจริงอีก ${Math.max(0,examLeft)} วัน · ต่อเนื่อง ${streak()} วัน</div></div>
   </div>
   ${!S.catalog.items.length?`<div class="card sky empty"><b>ยังไม่มีรายการข้อสอบ</b><span>กดเพื่ออ่านรายชื่อไฟล์จากโฟลเดอร์ใน Google Drive</span><button class="btn pri" data-act="sync">อ่านไฟล์จาก Drive</button></div>`
-   :!S.plan.length?`<div class="card sky empty"><b>มีข้อสอบ ${exams().filter(planned).length} ชุดแล้ว</b><span>ให้ระบบจัดตารางว่าแต่ละวันทำชุดไหน ให้จบภายใน 31 ธ.ค.</span><button class="btn pri" data-act="plan">จัดแผนให้เลย</button></div>`:""}
+   :!S.plan.length?`<div class="card sky empty"><b>มีข้อสอบ ${exams().filter(planned).length} ชุดแล้ว</b><span>ให้ระบบจัดตารางว่าแต่ละวันทำชุดไหน ให้จบภายใน ${thD(S.settings.deadline,{day:"numeric",month:"short",year:"numeric"})}</span><button class="btn pri" data-act="plan">จัดแผนให้เลย</button></div>`:""}
   ${late.length?`<div class="card pink row between"><span><b>มีงานค้าง ${late.length} ชุด</b> <span class="small muted">จากวันก่อน ๆ</span></span><span class="row"><button class="btn sm" data-act="lateToday">ย้ายมาวันนี้</button><button class="btn sm pri" data-act="plan">จัดแผนใหม่</button></span></div>`:""}
   <div class="grid g2">
     <div class="card"><div class="sec-h"><h2>ภารกิจวันนี้</h2><span class="pill">${items.filter(p=>p.done).length}/${items.length} ชุด</span></div>
@@ -391,6 +391,7 @@ VIEWS.today=()=>{
       <a class="btn sm" href="#progress" style="margin-top:10px">ดูพัฒนาการ</a></div>
   </div>
   <div class="card"><h2 style="margin-bottom:10px">ความคืบหน้าแต่ละวิชา</h2><div class="stack">${subs.map(k=>{const s=subjStats(k);return `<div class="prog">${subjTag(k)}<div><div class="row between small"><b>${SUBJ[k].name}</b><span class="muted num">${s.done}/${s.total} · เฉลี่ย ${pct(s.avg)}</span></div><div class="bar"><i style="width:${s.total?s.done/s.total*100:0}%;background:${SUBJ[k].c}"></i></div></div></div>`}).join("")||`<span class="muted small">ยังไม่มีข้อมูล</span>`}</div></div>
+  ${keytermsToday()}
   ${vocabToday()}
   ${next7.length?`<details class="card"><summary style="cursor:pointer;min-height:44px;display:flex;align-items:center"><h2>7 วันข้างหน้า</h2></summary><div class="stack" style="margin-top:10px">${next7.map(([d,it])=>`<div><div class="eyebrow">${thD(d,{weekday:"long",day:"numeric",month:"short"})}</div><div class="stack" style="margin-top:6px">${it.map(taskRow).join("")}</div></div>`).join("")}</div></details>`:""}`;
 };
@@ -491,6 +492,32 @@ function calcScore(){
 }
 function parseNums(s){const out=[];(s||"").split(/[,\s]+/).forEach(p=>{const m=p.match(/^(\d+)-(\d+)$/);if(m){for(let i=+m[1];i<=+m[2]&&out.length<300;i++)out.push(i)}else if(/^\d+$/.test(p))out.push(+p)});return out}
 
+/* ---------- key terms per subject ---------- */
+let KT=null;
+const ktKey=(s,i)=>s.id+":"+i;
+function ktTerm(s,i,open){
+  const x=s.terms[i];const k=ktKey(s,i);const known=!!S.nb.kt?.[k];
+  return `<details class="kt" ${open?"open":""} style="${known?"background:var(--mint-soft)":""}"><summary><span class="row" style="gap:8px;flex-wrap:nowrap">${subjTag(s.id)}<span style="flex:1;min-width:0"><b>${esc(x.t)}</b><br><span class="small muted">${esc(s.name)} · ${esc(x.lv||"")}${known?" · จำได้แล้ว ✓":" · แตะเพื่อดูความหมาย"}</span></span></span></summary>
+  <div class="kt-body"><p style="margin:0">${esc(x.d)}</p>${x.ex?`<p class="small" style="margin:.4rem 0 0"><b>ตัวอย่าง:</b> ${esc(x.ex)}</p>`:""}<button class="btn sm ${known?"":"ok"}" data-act="ktKnow" data-k="${esc(k)}" style="margin-top:8px">${known?"ยังไม่แม่น ทวนอีก":"จำได้แล้ว ✓"}</button></div></details>`;
+}
+function keytermsToday(){
+  if(!KT)return"";const day=Math.floor(parseD(today())/864e5);
+  const items=KT.subjects.map(s=>{const unk=s.terms.map((_,i)=>i).filter(i=>!S.nb.kt?.[ktKey(s,i)]);const pool=unk.length?unk:s.terms.map((_,i)=>i);return[s,pool[day%pool.length]]});
+  const total=KT.subjects.reduce((n,s)=>n+s.terms.length,0),known=Object.keys(S.nb.kt||{}).length;
+  return `<div class="card butter"><div class="sec-h"><h2>คำสำคัญวันนี้</h2><span class="pill">จำได้ ${known}/${total} คำ</span></div>
+  <p class="small muted" style="margin:.2rem 0 10px">วิชาละ 1 คำ ลองนึกความหมายก่อน แล้วค่อยแตะเปิดดู</p>
+  <div class="stack">${items.map(([s,i])=>ktTerm(s,i,false)).join("")}</div>
+  <a class="btn sm" href="#notes" data-act="ktAll" style="margin-top:12px">ดูคำสำคัญทั้งหมด</a></div>`;
+}
+function keytermsView(){
+  if(!KT)return `<div class="card empty">กำลังโหลดคำสำคัญ…</div>`;
+  const cur=UI.ktSubj||KT.subjects[0].id;const s=KT.subjects.find(x=>x.id===cur)||KT.subjects[0];
+  const known=s.terms.filter((_,i)=>S.nb.kt?.[ktKey(s,i)]).length;
+  return `<div class="chips" role="group" aria-label="วิชา">${KT.subjects.map(x=>`<button class="chip" data-act="ktSubj" data-k="${x.id}" aria-pressed="${x.id===s.id}">${esc(x.name)}</button>`).join("")}</div>
+  <div class="card butter row between"><span><b>${esc(s.name)}: จำได้ ${known}/${s.terms.length} คำ</b><br><span class="small muted">ระดับ ม.3–ม.6 แตะแต่ละคำเพื่อดูความหมาย</span></span></div>
+  <div class="stack">${s.terms.map((_,i)=>ktTerm(s,i,false)).join("")}</div>`;
+}
+
 /* ---------- vocabulary (synonym groups) ---------- */
 let VOC=null;
 const vKey=(c,i)=>c.id+":"+i;
@@ -528,8 +555,9 @@ const PRI_LABEL={HIGH:"สำคัญมาก",MEDIUM:"สำคัญ",LOW:"�
 function nbSubj(id){return SUBJ[NB_SUBJ[id]]||SUBJ.oth}
 VIEWS.notes=()=>{
   if(!NB)return `<div class="card empty">กำลังโหลดสมุดสรุป…</div>`;
-  const seg=`<div class="seg" role="group" aria-label="ส่วนของสมุด">${[["topics","สรุปเนื้อหา"],["vocab","คำศัพท์"],["quiz","ข้อสอบ"],["cards","การ์ดสูตร"]].map(([k,l])=>`<button data-act="nbTab" data-k="${k}" aria-pressed="${UI.nbTab===k}">${l}</button>`).join("")}</div>`;
+  const seg=`<div class="seg" role="group" aria-label="ส่วนของสมุด">${[["topics","สรุป"],["kt","คำสำคัญ"],["vocab","คำศัพท์"],["quiz","ข้อสอบ"],["cards","การ์ด"]].map(([k,l])=>`<button data-act="nbTab" data-k="${k}" aria-pressed="${UI.nbTab===k}">${l}</button>`).join("")}</div>`;
   const subjChips=(cur,act)=>`<div class="chips" role="group" aria-label="วิชา"><button class="chip" data-act="${act}" data-k="all" aria-pressed="${cur==="all"}">ทุกวิชา</button>${NB.subjects.map(s=>`<button class="chip" data-act="${act}" data-k="${s.id}" aria-pressed="${cur===s.id}">${esc(s.nameTh)}</button>`).join("")}</div>`;
+  if(UI.nbTab==="kt")return `<div class="row" style="justify-content:center">${seg}</div>`+keytermsView();
   if(UI.nbTab==="vocab")return `<div class="row" style="justify-content:center">${seg}</div>`+vocabView();
   if(UI.nbTab==="quiz")return `<div class="row" style="justify-content:center">${seg}</div>`+quizView(subjChips);
   if(UI.nbTab==="cards")return `<div class="row" style="justify-content:center">${seg}</div>`+cardsView(subjChips);
@@ -621,7 +649,7 @@ function settingsDialog(){
   openDlg(`<h2 id="dlgTitle">ตั้งค่า</h2>
   <p class="small muted" style="margin:0">เข้าสู่ระบบเป็น <b>${esc(EMAIL)}</b>${Store.fileId?` · <a href="https://drive.google.com/file/d/${Store.fileId}/view" target="_blank" rel="noopener">ไฟล์ข้อมูลใน Drive</a>`:""}</p>
   <div class="f2">
-    <label class="f">ทำคลังให้จบภายใน<input type="date" id="stDl" value="${st.deadline}" max="2026-12-31"></label>
+    <label class="f">ทำคลังให้จบภายใน<input type="date" id="stDl" value="${st.deadline}" min="${today()}" max="2027-12-31"></label>
     <label class="f">วันสอบจริง<input type="date" id="stEx" value="${st.examDate}"></label>
     <label class="f">ชม./วัน (จ–ศ)<input type="number" inputmode="decimal" step="0.5" min="0" id="stHw" value="${st.hWeekday}"></label>
     <label class="f">ชม./วัน (ส–อา)<input type="number" inputmode="decimal" step="0.5" min="0" id="stHe" value="${st.hWeekend}"></label>
@@ -692,6 +720,9 @@ const ACT={
   nbTab:b=>{UI.nbTab=b.dataset.k;render()},
   vocabAll:()=>{UI.nbTab="vocab";if(location.hash==="#notes")render();else location.hash="notes"},
   vocabCat:b=>{UI.vCat=b.dataset.k;render()},
+  ktAll:()=>{UI.nbTab="kt";if(location.hash==="#notes")render();else location.hash="notes"},
+  ktSubj:b=>{UI.ktSubj=b.dataset.k;render()},
+  ktKnow:b=>{S.nb.kt=S.nb.kt||{};const k=b.dataset.k;if(S.nb.kt[k])delete S.nb.kt[k];else{S.nb.kt[k]=today();toast(`เก่งมาก ${NAME}!`)}save();const y=scrollY;render();scrollTo(0,y)},
   vocabHide:()=>{UI.vHide=!UI.vHide;render()},
   vocabKnow:b=>{S.nb.vocab=S.nb.vocab||{};const k=b.dataset.k;if(S.nb.vocab[k])delete S.nb.vocab[k];else{S.nb.vocab[k]=today();toast(`เก่งมาก ${NAME}!`)}save();const y=scrollY;render();scrollTo(0,y)},nbSubj:b=>{UI.nbSubj=b.dataset.k;render()},cardSubj:b=>{UI.cardSubj=b.dataset.k;UI.cardI=0;render()},
   nbDone:b=>{const id=b.dataset.id;if(S.nb.done[id])delete S.nb.done[id];else{S.nb.done[id]=today();toast(`เก่งมาก ${NAME}! อ่านจบแล้ว ${Object.keys(S.nb.done).length} หัวข้อ`)}save();const y=scrollY;render();scrollTo(0,y)},
@@ -704,7 +735,7 @@ const ACT={
   quizNext:()=>{UI.quiz.i++;UI.quiz.picked=null;render();scrollTo(0,0)},
   quizEnd:()=>{UI.quiz=null;render()},
   card:b=>{const L=NB.knowledge.filter(k=>UI.cardSubj==="all"||k.subjectId===UI.cardSubj);UI.cardI=(UI.cardI+ +b.dataset.n+L.length)%L.length;render()},
-  settingsSave:()=>{const st=S.settings;let dl=$("#stDl").value||"2026-12-31";if(dl>"2026-12-31")dl="2026-12-31";
+  settingsSave:()=>{const st=S.settings;let dl=$("#stDl").value||st.deadline;if(dl>"2027-12-31")dl="2027-12-31";if(dl<today()){toast("วันที่ต้องไม่ย้อนหลังนะ");return}
     Object.assign(st,{deadline:dl,examDate:$("#stEx").value||st.examDate,hWeekday:+$("#stHw").value||0,hWeekend:+$("#stHe").value||0,maxSets:Math.max(1,+$("#stMax").value||3),target:clamp(+$("#stT").value||70,0,100),offDays:$$(".stOff:checked").map(i=>+i.value)});
     save();render();planDialog()},
   exportJson:()=>download(`feyfey-backup-${today()}.json`,JSON.stringify({app:"feyfey-study",exportedAt:new Date().toISOString(),data:S},null,1),"application/json"),
@@ -760,6 +791,7 @@ async function enterApp(){
   $("#gate").hidden=true;$("#shell").hidden=false;
   $("#view").innerHTML=`<div class="card empty">กำลังเปิดสมุดของ${NAME}…</div>`;
   fetch("notebook.json").then(r=>r.json()).then(j=>{NB=j;if(VIEW==="notes")render()}).catch(()=>{});
+  fetch("keyterms.json").then(r=>r.json()).then(j=>{KT=j;if(loaded&&(VIEW==="today"||VIEW==="notes"))render()}).catch(()=>{});
   fetch("vocab.json").then(r=>r.json()).then(j=>{VOC=j;if(loaded&&(VIEW==="today"||VIEW==="notes"))render()}).catch(()=>{});
   try{await Store.load()}catch(e){if(e.message==="auth")return;toast("โหลดข้อมูลจาก Drive ไม่สำเร็จ ใช้ข้อมูลในเครื่องไปก่อน");const l=Store.readCache();if(l)S=merge(l)}
   loaded=true;
