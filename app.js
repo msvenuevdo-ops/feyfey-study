@@ -204,8 +204,14 @@ async function syncCatalog(showResult){
     }
     await Promise.all(subs);
   }
+  // a folder this account can't open (not shared with it) lists as empty, so check each root first
+  const missing=[];const roots=[];
   try{
-    await Promise.all((CFG.EXAM_FOLDERS||[]).map(id=>walk(id,[],0)));
+    for(const id of CFG.EXAM_FOLDERS||[]){
+      try{const r=await api(`files/${id}?fields=id,name&supportsAllDrives=true`);roots.push({id,name:(await r.json()).name})}
+      catch(e){if(e.message==="auth")throw e;missing.push(id)}
+    }
+    for(const r of roots){const before=files.length;await walk(r.id,[],0);if(files.length===before)missing.push(r.id)}
   }catch(e){setSave("อ่าน Drive ไม่สำเร็จ");if(e.message!=="auth")toast("อ่านโฟลเดอร์ Drive ไม่สำเร็จ: "+e.message);return}
   // group duplicates: same subject + same cleaned title + same size (±2%)
   const groups=new Map();
@@ -230,9 +236,10 @@ async function syncCatalog(showResult){
   items.sort((a,b)=>a.subj.localeCompare(b.subj)||natCmp(a.title,b.title));
   const before=new Set(S.catalog.items.map(i=>i.id));
   const added=items.filter(i=>!before.has(i.id)&&!S.catalog.items.some(o=>o.dups?.includes(i.id))).length;
-  S.catalog={syncedAt:Date.now(),items};save();render();
+  S.catalog={syncedAt:Date.now(),items,missing};save();render();
   setSave("อ่านรายการไฟล์แล้ว ✓");
-  if(showResult)toast(`พบ ${items.length} ชุด/ไฟล์ · ใหม่ ${before.size?added:items.length} · ไฟล์ซ้ำ ${files.length-items.length}`);
+  if(missing.length)toast(`เปิดโฟลเดอร์ข้อสอบไม่ได้ ${missing.length} โฟลเดอร์ ดูวิธีแก้ในหน้าข้อสอบ`);
+  else if(showResult)toast(`พบ ${items.length} ชุด/ไฟล์ · ใหม่ ${before.size?added:items.length} · ไฟล์ซ้ำ ${files.length-items.length}`);
 }
 function demoCatalog(){
   const L=[];const mk=(subj,n,title,type)=>L.push({id:`demo-${subj}-${n}`,title,subj,type,topic:guessTopic(subj,title),size:1e6,folder:"ตัวอย่าง",dups:[]});
@@ -382,11 +389,12 @@ VIEWS.exams=()=>{
   const subs=Object.keys(SUBJ).filter(k=>exams().some(e=>e.subj===k));
   const synced=S.catalog.syncedAt?new Date(S.catalog.syncedAt).toLocaleString("th-TH",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}):"ยังไม่เคย";
   return `<div class="sec-h"><div><div class="eyebrow">อ่านจาก Google Drive ล่าสุด ${synced}</div><h2>${exams().length} ไฟล์ในคลัง</h2></div><button class="btn sm" data-act="sync">อัปเดตจาก Drive</button></div>
+  ${(S.catalog.missing||[]).length?`<div class="card pink stack"><b>เปิดโฟลเดอร์ข้อสอบไม่ได้ ${S.catalog.missing.length} โฟลเดอร์</b><span class="small">บัญชี ${esc(EMAIL)} ยังไม่ได้รับสิทธิ์ ให้เจ้าของโฟลเดอร์กด “แชร์” แล้วใส่อีเมลนี้เป็นผู้มีสิทธิ์อ่าน จากนั้นกด “อัปเดตจาก Drive”</span><div class="row">${S.catalog.missing.map(id=>`<a class="btn sm" href="https://drive.google.com/drive/folders/${encodeURIComponent(id)}" target="_blank" rel="noopener">เปิดโฟลเดอร์ ↗</a>`).join("")}</div></div>`:""}
   <input class="search" type="search" id="exQ" placeholder="ค้นหาชื่อชุด…" value="${esc(UI.exQ)}" aria-label="ค้นหาข้อสอบ">
   <div class="chips" role="group" aria-label="วิชา"><button class="chip" data-act="exSubj" data-k="" aria-pressed="${!UI.exSubj}">ทุกวิชา</button>${subs.map(k=>`<button class="chip" data-act="exSubj" data-k="${k}" aria-pressed="${UI.exSubj===k}">${SUBJ[k].name}</button>`).join("")}</div>
   <div class="chips" role="group" aria-label="ประเภท">${[["exam","ข้อสอบ"],["read","อ่าน/สรุป"],["extra","อ่านเสริม"],["ans","เฉลย"],["all","ทั้งหมด"]].map(([k,l])=>`<button class="chip" data-act="exType" data-k="${k}" aria-pressed="${UI.exType===k}">${l} (${exams().filter(e=>(k==="all"||e.type===k)&&(!UI.exSubj||e.subj===UI.exSubj)).length})</button>`).join("")}</div>
   <div class="list">${L.map(e=>{const at=attemptsOf(e.id);const s=status(e);return `<div class="erow" style="${e.excluded?"opacity:.55":""}">${subjTag(e.subj)}<div class="t"><b>${esc(e.title)}</b><span>${esc(e.topic)}${at.length?` · ทำ ${at.length} ครั้ง · ล่าสุด ${pct(at.at(-1).pct)}`:""}${e.dups?.length?` · มีไฟล์ซ้ำ ${e.dups.length}`:""}${e.excluded?" · ไม่นับในแผน":""}</span></div>
-    <div class="acts">${planned(e)?pill(s):""}<a class="btn sm" href="https://drive.google.com/file/d/${encodeURIComponent(e.id)}/view" target="_blank" rel="noopener">เปิดไฟล์</a>${e.type!=="ans"?`<button class="btn sm pri" data-act="startExam" data-id="${e.id}">เริ่ม</button>`:""}<button class="btn sm ghost" data-act="editExam" data-id="${e.id}" aria-label="แก้ไข ${esc(e.title)}">⋯</button></div></div>`}).join("")||`<div class="card empty">${S.catalog.items.length?"ไม่พบไฟล์ตามตัวกรองนี้":"ยังไม่ได้อ่านไฟล์จาก Drive"}<button class="btn sm pri" data-act="sync">อ่านไฟล์จาก Drive</button></div>`}</div>
+    <div class="acts">${planned(e)?pill(s):""}<a class="btn sm" href="https://drive.google.com/file/d/${encodeURIComponent(e.id)}/view" target="_blank" rel="noopener">เปิดไฟล์</a>${e.type!=="ans"?`<button class="btn sm pri" data-act="startExam" data-id="${e.id}">เริ่ม</button>`:""}<button class="btn sm ghost" data-act="editExam" data-id="${e.id}" aria-label="แก้ไข ${esc(e.title)}">⋯</button></div></div>`}).join("")||`<div class="card empty">${S.catalog.items.length?"ไม่พบไฟล์ตามตัวกรองนี้":S.catalog.syncedAt?"ยังไม่พบไฟล์ในโฟลเดอร์ที่เปิดได้":"ยังไม่ได้อ่านไฟล์จาก Drive"}<button class="btn sm pri" data-act="sync">อ่านไฟล์จาก Drive</button></div>`}</div>
   <p class="small muted">ระบบเดาวิชาจากชื่อโฟลเดอร์ และเดาประเภทจากชื่อไฟล์ ถ้าไม่ตรงกด ⋯ เพื่อแก้ ไฟล์ชื่อเดียวกันและขนาดเท่ากันจะรวมเป็นชุดเดียว</p>`;
 };
 
@@ -706,7 +714,7 @@ async function enterApp(){
   loaded=true;
   if(S.session&&S.session.status==="running")keepAwake(true);
   render();
-  const stale=!S.catalog.syncedAt||Date.now()-S.catalog.syncedAt>12*3600e3;
+  const stale=!S.catalog.syncedAt||Date.now()-S.catalog.syncedAt>12*3600e3||!S.catalog.items.length||(S.catalog.missing||[]).length>0;
   if(stale)syncCatalog(!S.catalog.items.length);
 }
 initAuth();
