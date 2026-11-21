@@ -5,7 +5,7 @@ window.APP_CONFIG = {
 
   // 2) บัญชี Google ที่อนุญาตให้เข้าเว็บ เก็บเป็นรหัส SHA-256 ของอีเมล (ตัวพิมพ์เล็ก)
   //    เพื่อไม่ให้อีเมลจริงโผล่ใน GitHub สร้างรหัสใหม่ได้ที่ https://emn178.github.io/online-tools/sha256.html
-  ALLOWED_EMAIL_SHA256: ["98fadc0cb20b1325039ce3b6273d528e1094bf2f8d41ab3fc6db66f829a26907"],
+  ALLOWED_EMAIL_SHA256: ["ea15bf5aab862df519bab7cbb5b2f642df18b6a6d20b763a5bd6e2bdc5ded762"],
 
   // 3) โฟลเดอร์ข้อสอบใน Google Drive (ID คือส่วนท้ายของลิงก์โฟลเดอร์)
   EXAM_FOLDERS: [
